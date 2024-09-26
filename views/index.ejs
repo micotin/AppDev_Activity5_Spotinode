@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Page Title -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-primary">Music Player</h1>
+            <a href="/add" class="btn btn-outline-primary">Add Song</a>
+        </div>
+
+        <!-- Song Queue Section -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h3 class="text-secondary">Song Queue</h3>
+                <ul class="list-group">
+                    <% queue.forEach(song => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><%= song.title %> by <%= song.artist %></span>
+                        <a href="/edit/<%= song.id %>" class="btn btn-sm btn-warning">Edit</a>
+                    </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Playlist Section -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-secondary">Playlists</h3>
+                <ul class="list-group">
+                    <% playlists.forEach(playlist => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><%= playlist.name %></span>
+                        <a href="/playlist/<%= playlist.id %>" class="btn btn-sm btn-info">View</a>
+                    </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/script.js"></script>
+</body>
+</html>
