@@ -1,43 +1,30 @@
 const express = require('express');
+const router = express.Router();
 const musicController = require('../controller/musicController');
 const multer = require('multer');
 const path = require('path');
 
-const router = express.Router();
-
-// Set up storage for multer
+// Multer storage setup for handling file uploads
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // specify your upload directory
-    },
+    destination: './uploads/',
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.random().toString(36).substring(2, 15);
-        cb(null, uniqueSuffix + '-' + file.originalname); // create a unique filename
+        cb(null, Date.now() + path.extname(file.originalname));  // Create unique filenames
     },
 });
 
-// Configure multer with limits and file filter
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5 MB
-    fileFilter: (req, file, cb) => {
-        const filetypes = /mp3|wav|ogg/; // Supported file types
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+const upload = multer({ storage });
 
-        if (mimetype && extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Error: File type not supported!'));
-        }
-    }
-});
+// Routes
+router.get('/', musicController.getSongs);  // Get all songs
+router.get('/upload', musicController.showUploadForm);  // Show upload form
 
-// Define routes
-router.get('/', musicController.getAllSongs);
-router.get('/add', musicController.addSongForm);
-router.post('/add', upload.single('songFile'), musicController.addSong); // Use multer for file upload
-router.get('/edit/:id', musicController.editSongForm);
-router.post('/edit/:id', musicController.editSong);
+// Update route to handle both the image and song file uploads
+router.post('/upload', upload.fields([{ name: 'image_cover', maxCount: 1 }, { name: 'songFile', maxCount: 1 }]), musicController.addSong);
+
+router.get('/edit/:id', musicController.getSongById);  // Get song by ID for editing
+router.post('/edit/:id', upload.single('songFile'), musicController.updateSong);  // Update song
+router.post('/edit/:id', musicController.updateSong);  // Handle edit/update request
+router.post('/delete/:id', musicController.deleteSong);  // Delete song
+
 
 module.exports = router;

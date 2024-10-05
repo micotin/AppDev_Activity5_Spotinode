@@ -1,44 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Song</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-</head>
-<body>
-    <div class="container py-5">
-        <!-- Page Title -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-primary">Edit Song</h1>
-            <a href="/" class="btn btn-outline-secondary">Back to Queue</a>
-        </div>
-
-        <!-- Edit Song Form -->
-        <div class="row">
-            <div class="col-md-6 mx-auto">
-                <form action="/edit/<%= song.id %>" method="POST" class="shadow p-4 rounded bg-light">
-                    <div class="mb-3">
-                        <label for="songTitle" class="form-label">Song Title</label>
-                        <input type="text" class="form-control" id="songTitle" name="title" value="<%= song.title %>" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="songArtist" class="form-label">Artist</label>
-                        <input type="text" class="form-control" id="songArtist" name="artist" value="<%= song.artist %>" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="songAlbum" class="form-label">Album</label>
-                        <input type="text" class="form-control" id="songAlbum" name ="album" value="<%= song.album %>">
-                    </div>
-                    <button type="submit" class="btn btn-warning w-100">Update Song</button>
-                </form>
-            </div>
-        </div>
+<!-- Modal Form for Editing music -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Song</h2>
+        <!-- Include the song ID in the form action -->
+        <form id="editForm" action="/edit/<%= song.id %>" method="POST" enctype="multipart/form-data">
+            <!-- Hidden field to store the index of the song being edited -->
+            <input type="hidden" id="editIndex" name="index" value="<%= song.id %>">
+            
+            <label for="editTitle">Title:</label>
+            <input type="text" id="editTitle" name="title" value="<%= song.title %>" required><br><br>
+        
+            <label for="editArtist">Artist:</label>
+            <input type="text" id="editArtist" name="artist" value="<%= song.artist %>" required><br><br>
+        
+            <button type="submit" class="btn btn-success">Save Changes</button>
+        </form>
+        
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/script.js"></script>
-</body>
-</html>
+</div>
+<script>
+    // Edit Song functionality
+const editBtn = document.getElementById('editBtn');
+const editModal = document.getElementById('editModal');
 
+editBtn.addEventListener('click', () => {
+    if (currentTrackIndex !== null) {
+        const songItem = document.querySelector(`.song-item[data-index="${currentTrackIndex}"]`);
+        document.getElementById('editIndex').value = currentTrackIndex;
+        document.getElementById('editTitle').value = songItem.querySelector('h5').textContent;
+        document.getElementById('editArtist').value = songItem.querySelector('p').textContent;
+        
+        editModal.style.display = 'block';
+    }
+});
+</script>

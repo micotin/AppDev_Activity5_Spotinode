@@ -1,52 +1,471 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Player</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #181818;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            font-weight: 700;
+            margin-top: 20px;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        /* Header styling */
+        .header {
+            background-color: #282828;
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #444;
+        }
+
+        .nav-links a {
+            color: #bbb;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #1db954;
+        }
+
+        .container {
+            max-width: 100%;
+            margin-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        #songsListContainer {
+    height: 400px; /* Adjust height to fit more songs */
+    overflow-y: auto; /* Enable scrolling */
+}
+
+#songsList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px;
+}
+
+.song-item {
+    background-color: #1f1f1f;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s, box-shadow 0.3s;
+    width: 180px; /* Fixed width */
+    height: 250px; /* Fixed height for uniformity */
+    cursor: pointer;
+    display: flex; /* Enable flexbox */
+    flex-direction: column; /* Align items in a column */
+    justify-content: space-between; /* Space between items */
+}
+
+.song-cover {
+    width: 100%;
+    height: 150px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.song-info {
+    margin-top: 10px; /* Space between cover and info */
+    flex-grow: 1; /* Allow song info to take remaining space */
+    text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    overflow: hidden; /* Hide overflow text */
+    white-space: nowrap; /* Prevent text wrapping */
+    position: relative; /* Position relative for tooltip */
+}
+
+.song-info:hover {
+    overflow: visible; /* Show full text on hover */
+    white-space: normal; /* Allow text to wrap */
+    z-index: 10; /* Bring to front */
+}
+
+.song-info:hover::after {
+    content: attr(data-full-title); /* Show full title as a tooltip */
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 5px;
+    z-index: 20;
+    white-space: nowrap; /* Prevent tooltip from wrapping */
+}
+
+.song-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+}
+
+.song-item.playing {
+    border: 2px solid #1db954; /* Green border for the currently playing song */
+}
+
+.song-info h5 {
+    font-size: 1.2rem;
+    margin: 10px 0 0;
+    font-weight: 600;
+}
+
+.song-info p {
+    font-size: 0.9rem;
+    color: #bbb;
+    margin: 0;
+}
+
+
+        /* Bottom music player styling */
+        .music-player {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #202020;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+            border-top: 1px solid #444;
+            visibility: hidden; /* Initially hidden */
+            transition: visibility 0.3s;
+        }
+
+        .music-player img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .song-info {
+            margin-left: 15px;
+            flex-grow: 1;
+        }
+
+        .song-info h5 {
+            font-size: 1.2rem;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .song-info p {
+            margin: 0;
+            color: #bbb;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            margin: 0 20px;
+            height: 6px;
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        .music-controls button {
+            background-color: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .music-controls button:hover {
+            color: #1db954;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background-color: #444;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 40%;
+            color: white;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .song-item {
+                width: 100%;
+            }
+
+            .modal-content {
+                width: 90%;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <div class="container py-5">
-        <!-- Page Title -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-primary">Music Player</h1>
-            <a href="/add" class="btn btn-outline-primary">Add Song</a>
-        </div>
-
-        <!-- Song Queue Section -->
-        <div class="row mb-5">
-            <div class="col-md-12">
-                <h3 class="text-secondary">Song Queue</h3>
-                <ul class="list-group">
-                    <% queue.forEach(song => { %>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><%= song.title %> by <%= song.artist %></span>
-                        <a href="/edit/<%= song.id %>" class="btn btn-sm btn-warning">Edit</a>
-                    </li>
-                    <% }) %>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Playlist Section -->
-        <div class="row">
-            <div class="col-md-12">
-                <h3 class="text-secondary">Playlists</h3>
-                <ul class="list-group">
-                    <% playlists.forEach(playlist => { %>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><%= playlist.name %></span>
-                        <a href="/playlist/<%= playlist.id %>" class="btn btn-sm btn-info">View</a>
-                    </li>
-                    <% }) %>
-                </ul>
-            </div>
+    <!-- Header -->
+    <div class="header">
+        <h1>MiQueue</h1>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">Playlists</a>
         </div>
     </div>
-    
+
+    <!-- List of songs -->
+    <div class="container mt-4" id="songsListContainer">
+        <h2 class="text-center">For You</h2>
+        <div class="text-end mb-3">
+            <button id="addSongBtn" class="btn btn-primary">Add Song</button>
+        </div>
+        <div class="row" id="songsList">
+            <% if (tracks.length > 0) { %>
+                <% tracks.forEach((track, index) => { %>
+                    <div class="col-6 col-md-2 mb-4">
+                        <div class="song-item" data-index="<%= index %>">
+                            <img src="<%= track.image_path %>" alt="<%= track.title %>" class="song-cover">
+                            <div class="song-info">
+                                <h5 class="mb-0"><%= track.title %></h5>
+                                <p class="mb-0"><%= track.artist %></p>
+                            </div>
+                            <audio src="<%= track.file_path %>" class="song-file"></audio>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p>No songs available. Upload a new song!</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Modal Form for adding music -->
+    <div id="songModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add a New Song</h2>
+            <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required><br><br>
+
+                <label for="artist">Artist:</label>
+                <input type="text" id="artist" name="artist" required><br><br>
+
+                <label for="image_cover">Cover Image:</label>
+                <input type="file" id="image_cover" name="image_cover" accept="image/*" required><br><br>
+
+                <label for="songFile">Music File:</label>
+                <input type="file" id="songFile" name="songFile" accept="audio/*" required><br><br>
+
+                <button type="submit" class="btn btn-success">Upload Song</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bottom Music Player -->
+    <div class="music-player" id="musicPlayer">
+        <img src="" alt="Song Cover" id="currentCover">
+        <div class="song-info">
+            <h5 id="currentTitle">Song Title</h5>
+            <p id="currentArtist">Artist Name</p>
+        </div>
+        <input type="range" id="progressBar" class="progress-bar" value="0" step="0.1">
+        <div class="music-controls">
+            <button id="prevBtn"><i class="bi bi-skip-backward-fill"></i></button>
+            <button id="playPauseBtn"><i class="bi bi-play-fill"></i></button>
+            <button id="nextBtn"><i class="bi bi-skip-forward-fill"></i></button>
+            <button id="editBtn"><i class="bi bi-pencil-fill"></i></button> <!-- Edit button -->
+        </div>        
+    </div>
+    <!-- Modal Form for Editing music -->
+
+
+    <script>
+        let currentTrackIndex = null;
+        let isPlaying = false;
+        let audioElement = null;
+        const musicPlayer = document.getElementById('musicPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const currentCover = document.getElementById('currentCover');
+        const currentTitle = document.getElementById('currentTitle');
+        const currentArtist = document.getElementById('currentArtist');
+        const progressBar = document.getElementById('progressBar');
+
+        // Show/hide music player
+        function toggleMusicPlayer(show) {
+            musicPlayer.style.visibility = show ? 'visible' : 'hidden';
+        }
+
+        // Play a selected song
+        function playSong(index) {
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.currentTime = 0;
+            }
+
+            currentTrackIndex = index;
+            const songItem = document.querySelector(`.song-item[data-index="${index}"]`);
+            const songFile = songItem.querySelector('.song-file');
+            audioElement = songFile;
+
+            currentCover.src = songItem.querySelector('.song-cover').src;
+            currentTitle.textContent = songItem.querySelector('h5').textContent;
+            currentArtist.textContent = songItem.querySelector('p').textContent;
+
+            audioElement.play();
+            isPlaying = true;
+            toggleMusicPlayer(true);
+
+            songItem.classList.add('playing');
+
+            // Update progress bar as the song plays
+            audioElement.ontimeupdate = () => {
+                const progress = (audioElement.currentTime / audioElement.duration) * 100;
+                progressBar.value = progress;
+                if (audioElement.ended) {
+                    songItem.classList.remove('playing');
+                    isPlaying = false;
+                    toggleMusicPlayer(false);
+                }
+            };
+
+            // Reset progress bar on song end
+            audioElement.onended = () => {
+                songItem.classList.remove('playing');
+                isPlaying = false;
+                toggleMusicPlayer(false);
+            };
+        }
+
+        // Event listeners for song items
+        document.querySelectorAll('.song-item').forEach((item) => {
+            item.addEventListener('click', () => {
+                const index = item.getAttribute('data-index');
+                if (currentTrackIndex === index && isPlaying) {
+                    audioElement.pause();
+                    isPlaying = false;
+                    item.classList.remove('playing');
+                    toggleMusicPlayer(false);
+                } else {
+                    playSong(index);
+                }
+            });
+        });
+
+        // Play/Pause button functionality
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audioElement.pause();
+            } else {
+                audioElement.play();
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // Previous and Next button functionality
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentTrackIndex > 0) {
+                playSong(currentTrackIndex - 1);
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentTrackIndex < document.querySelectorAll('.song-item').length - 1) {
+                playSong(currentTrackIndex + 1);
+            }
+        });
+
+        // Toggle progress bar for fast forward and rewind
+        progressBar.addEventListener('mousedown', (e) => {
+            const progressWidth = progressBar.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audioElement.duration;
+
+            const newTime = (clickX / progressWidth) * duration;
+            audioElement.currentTime = newTime;
+        });
+
+        // Add Song Modal functionality
+const addSongBtn = document.getElementById('addSongBtn');
+const songModal = document.getElementById('songModal');
+const closeBtns = document.querySelectorAll('.close');
+
+// Open Add Song Modal
+addSongBtn.addEventListener('click', () => {
+    songModal.style.display = 'block';
+});
+
+// Close modals
+closeBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+        songModal.style.display = 'none';
+        document.getElementById('editModal').style.display = 'none';
+    });
+});
+
+// Close modals when clicking outside
+window.onclick = function (event) {
+    if (event.target == songModal) {
+        songModal.style.display = 'none';
+    } else if (event.target == document.getElementById('editModal')) {
+        document.getElementById('editModal').style.display = 'none';
+    }
+};
+
+// Edit Song functionality
+const editBtn = document.getElementById('editBtn');
+const editModal = document.getElementById('editModal');
+
+editBtn.addEventListener('click', () => {
+    if (currentTrackIndex !== null) {
+        const songItem = document.querySelector(`.song-item[data-index="${currentTrackIndex}"]`);
+        document.getElementById('editIndex').value = currentTrackIndex;
+        document.getElementById('editTitle').value = songItem.querySelector('h5').textContent;
+        document.getElementById('editArtist').value = songItem.querySelector('p').textContent;
+        
+        editModal.style.display = 'block';
+    }
+});
+
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/script.js"></script>
+    <script src="/js/script"></script>
 </body>
+
 </html>
+
